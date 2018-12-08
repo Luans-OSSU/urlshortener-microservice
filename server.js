@@ -1,28 +1,38 @@
-var express = require('express');
-var mongo = require('mongodb');
-var mongoose = require('mongoose');
+const express = require('express');
+const mongo = require('mongodb');
+const mongoose = require('mongoose');
+const bodyParser = require("body-parser");
+const cors = require('cors');
 
-var cors = require('cors');
 
-var app = express();
+const app = express();
+const port = process.env.PORT || 3000;
 
-var port = process.env.PORT || 3000;
+const mongoURI ="mongodb://localhost/url-shortner";
+const connectionOptions = {
+  keepAlive: true,
+  reconnecTries: Number.MAX_VALUE
+}
 
-/** this project needs a db !! **/ 
-// mongoose.connect(process.env.MONGOLAB_URI);
+mongoose.Promise = global.Promise;
+mongoose.connect(mongoURI, connectionOptions, (err, db) => {
+  if (err) console.log("Error", err);
+  console.log("Connected to MongoDB");
+});
+
 
 app.use(cors());
-
-/** this project needs to parse POST bodies **/
-// you should mount the body-parser here
+app.use(bodyParser.json());
 
 app.use('/public', express.static(process.cwd() + '/public'));
 
-app.get('/', function(req, res){
+require("./models/UrlShorten");
+require("./routes/urlshorten")(app);
+
+app.get('/', (req, res) => {
   res.sendFile(process.cwd() + '/views/index.html');
 });
   
-
-app.listen(port, function () {
+app.listen(port, () => {
   console.log('Node.js listening on port ' + port);
 });
